@@ -47,6 +47,11 @@ class Individual:
 
         return x_array
 
+    def mutate(self):
+        stand_dev = 1.0
+        for i, u_k, in enumerate(self.excitation):
+            self.excitation[i] = u_k + np.random.normal(scale=stand_dev)
+
 
 class GA:
     def __init__(self, N, min_exc_value, max_exc_value, max_iterations, no_indviduals):
@@ -54,8 +59,25 @@ class GA:
         self.max_iterations = max_iterations
         self.individuals_list = [Individual(self.N, min_exc_value, max_exc_value) for i in range(no_indviduals)]
 
+    def run_algorithm(self):
+        # Glowna petla algorytmu
+        for i in range (self.max_iterations):
+            #
+            self.mutate_all()
+
+    def mutate_all(self):
+        for ind in self.individuals_list:
+            ind.mutate()
 
 
 
-ga = GA(N=100, min_exc_value=-200, max_exc_value=200, max_iterations=10000, no_indviduals=100)
+
+
+
+ga = GA(N=100, min_exc_value=-200, max_exc_value=200, max_iterations=100, no_indviduals=100)
+
+ga.run_algorithm()
+
+
+
 
