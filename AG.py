@@ -36,7 +36,7 @@ class Individual:
         for k in range(1, self.N+1):
             x_array[k] = self.excitation[k-1]
 
-        #  performance index - excitation^2 + state^2
+        #  performance index -> excitation^2 + state^2
         return np.sum(np.square(self.excitation)) + np.sum(x_array)
 
     def calc_state(self, x0):
@@ -53,13 +53,20 @@ class Individual:
         return x_array
 
     def mutate(self, tau, yps):
-        # tau = 0.2 # Zalezne od kroku algorytmu < 1
-        # yps = 0.3
+        """
+        Mutation for individual:
+        First mutation of standard deviation, based on previous standard deviation values and parameters
+        which depend on current algorithm step (tau, yps).
+        Later mutation of excitation based on previous value of excitation and current value of standard deviation.
+        :param tau: parameter, based on step of algorithm. Decreases in time
+        :param yps: parameter, based on step of algorithm. Decreases in time
+        :return: None
+        """
+        # Mutation of standard deviation
+        self.stand_deviation = self.stand_deviation * np.exp(tau*np.random.normal(size=self.N) + yps*np.random.normal(size=self.N))
+        # Mutation of excitation
+        self.excitation = self.excitation + np.random.normal(scale=self.stand_deviation)
 
-        stand_dev = 1.0
-        for k, u_k, in enumerate(self.excitation):
-            # self.excitation[i] = u_k + np.random.normal(scale=stand_dev)
-            self.excitation[k] = u_k + np.random.normal(scale=self.stand_deviation[k])
 
 
 class GA:
@@ -75,15 +82,26 @@ class GA:
         self.children_list = [Individual(self.N, self.min_exc_value, self.max_exc_value, False) for i in range(lambda_ga)]
 
     def run_algorithm(self):
-        # Glowna petla algorytmu
-        for i in range(self.max_iterations):
-            #
-            self.mutate_all()
+        """
+        Main algorithm loop
+        :return: None
+        """
+        for alg_it in range(self.max_iterations):
+            self.mutate_all(alg_it)
             self.crossover()
 
-    def mutate_all(self):
+    def mutate_all(self, alg_it):
+        """
+        Mutate all individuals
+        :param alg_it: iteration of algorithm
+        :return: None
+        """
+        # Parameters indicating size of mutation
+        tau = 1/(np.sqrt(2*np.sqrt(alg_it+1)))
+        yps = 1/(np.sqrt(2*alg_it+1))
+
         for ind in self.individuals_list:
-            ind.mutate(tau=0.2, yps=0.3)
+            ind.mutate(tau=tau, yps=yps)
 
     def crossover(self):
         """
@@ -96,10 +114,7 @@ class GA:
 
         #  Iterating over parents - in evey iteration creating 2 children
         for i, (i1, i2) in enumerate(zip(indices_to_cross_1, indices_to_cross_2)):
-            # self.children_list[i] = Individual(self.N, self.min_exc_value, self.max_exc_value, False)
-            # self.children_list[i+int(self.lambda_ga/2)] = Individual(self.N, self.min_exc_value, self.max_exc_value, False)
             self.cross_2(i, i1, i2)
-
 
     def cross_2(self, i, i1, i2):
         """
@@ -121,7 +136,6 @@ class GA:
 
 
 
-        pass
 
 
 
