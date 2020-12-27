@@ -69,11 +69,16 @@ class Individual:
 
 
 
+
 class GA:
     def __init__(self, N, min_exc_value, max_exc_value, max_iterations, no_indviduals, lambda_ga):
         self.N = N
         self.min_exc_value = min_exc_value
         self.max_exc_value = max_exc_value
+        self.no_individuals = no_indviduals
+
+        self.average_performance_list = []
+        self.best_performance_list = []
 
         self.max_iterations = max_iterations
         self.individuals_list = [Individual(self.N, self.min_exc_value, self.max_exc_value, True) for i in range(no_indviduals)]
@@ -89,6 +94,7 @@ class GA:
         for alg_it in range(self.max_iterations):
             self.mutate_all(alg_it)
             self.crossover()
+            self.find_best_individuals()
 
     def mutate_all(self, alg_it):
         """
@@ -133,14 +139,29 @@ class GA:
         self.children_list[i].stand_deviation = a_std_dev * self.individuals_list[i1].stand_deviation + \
                                                 (1 - a_std_dev) * self.individuals_list[i2].stand_deviation
 
+    def find_best_individuals(self):
+        """
+        Finds best individuals in individuals_list and children_list.
+        Also calculates average performance of individual_list, and best best performance
+        :return:
+        """
+        individuals_performance = np.asarray([individual.calc_performance_index(x0=1) for individual in self.individuals_list])
+        worst_performance = np.min(individuals_performance)
+
+        for child in self.children_list:
+            child_performance = child.calc_performance_index(x0=1)
+            if child_performance > worst_performance:
+                individuals_performance = np.append(individuals_performance, child_performance)
+                self.individuals_list = np.append(self.individuals_list, child)
 
 
+        individuals_performance = np.sort(individuals_performance)
+        indexed_list = zip(individuals_performance, self.individuals_list)
+        self.individuals_list = [x for _, x in sorted(indexed_list, key=lambda pair: pair[0])]
+        self.individuals_list = self.individuals_list[: self.no_individuals]
 
-
-
-
-
-
+        self.average_performance_list.append(np.average(individuals_performance))
+        self.best_performance_list.append(np.max(individuals_performance))
 
 
 
