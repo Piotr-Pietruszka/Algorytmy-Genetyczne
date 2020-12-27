@@ -155,7 +155,6 @@ class GA:
                 self.individuals_list = np.append(self.individuals_list, child)
 
 
-        individuals_performance = np.sort(individuals_performance)
         indexed_list = zip(individuals_performance, self.individuals_list)
         self.individuals_list = [x for _, x in sorted(indexed_list, key=lambda pair: pair[0])]
         self.individuals_list = self.individuals_list[: self.no_individuals]
