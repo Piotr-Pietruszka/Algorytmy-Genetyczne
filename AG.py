@@ -53,6 +53,9 @@ class GA:
         self.N = N
         self.max_iterations = max_iterations
         self.individuals_list = [Individual(self.N, min_exc_value, max_exc_value) for i in range(no_indviduals)]
+        self.individuals_performance = np.asarray([individual.calc_performance_index(x0=1) for individual in self.individuals_list])
+        average_performance = np.average(self.individuals_performance)
+        best_performance = np.max(self.individuals_performance)
 
 
 
