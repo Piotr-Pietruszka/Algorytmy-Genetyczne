@@ -1,4 +1,6 @@
 import numpy as np
+from matplotlib import pyplot as plt
+import copy
 
 
 class Individual:
@@ -13,7 +15,7 @@ class Individual:
         :param min_value: minimum excitation value
         :param max_value: maximum excitation value
         """
-        stand_deviation_max_value = 3.0  # Do zmiany
+        stand_deviation_max_value = 5.0  # Do zmiany
         self.N = N
         if initialize:
             self.excitation = min_value + np.random.rand(N)*(max_value - min_value)
@@ -34,10 +36,10 @@ class Individual:
         x_array[0] = x0
         # Calculating state
         for k in range(1, self.N+1):
-            x_array[k] = self.excitation[k-1]
+            x_array[k] = x_array[k-1] + self.excitation[k-1]
 
         #  performance index -> excitation^2 + state^2
-        return np.sum(np.square(self.excitation)) + np.sum(x_array)
+        return np.sum(np.square(self.excitation)) + np.sum(np.square(x_array))
 
     def calc_state(self, x0):
         """
@@ -48,7 +50,7 @@ class Individual:
         x_array = np.zeros(self.N + 1)
         x_array[0] = x0
         for k in range(1, self.N + 1):
-            x_array[k] = self.excitation[k - 1]
+            x_array[k] = x_array[k-1] + self.excitation[k - 1]
 
         return x_array
 
@@ -63,15 +65,21 @@ class Individual:
         :return: None
         """
         # Mutation of standard deviation
-        self.stand_deviation = self.stand_deviation * np.exp(tau*np.random.normal(size=self.N) + yps*np.random.normal(size=self.N))
+        self.stand_deviation = self.stand_deviation * np.exp(
+            tau * np.random.normal(size=self.N) + yps * np.random.normal(size=self.N))
+
         # Mutation of excitation
         self.excitation = self.excitation + np.random.normal(scale=self.stand_deviation)
+        self.excitation[self.excitation > 200] = 200
+        self.excitation[self.excitation < -200] = -200
+
 
 
 
 
 class GA:
-    def __init__(self, N, min_exc_value, max_exc_value, max_iterations, no_indviduals, lambda_ga):
+
+    def __init__(self, N, min_exc_value, max_exc_value, x0, max_iterations, no_indviduals, lambda_ga):
         self.N = N
         self.min_exc_value = min_exc_value
         self.max_exc_value = max_exc_value
@@ -79,12 +87,14 @@ class GA:
 
         self.average_performance_list = []
         self.best_performance_list = []
+        self.average_standard_dev_list = []
 
         self.max_iterations = max_iterations
         self.individuals_list = [Individual(self.N, self.min_exc_value, self.max_exc_value, True) for i in range(no_indviduals)]
 
         self.lambda_ga = lambda_ga + lambda_ga % 2  # Zapewnienie parzystosci lambda
         self.children_list = [Individual(self.N, self.min_exc_value, self.max_exc_value, False) for i in range(lambda_ga)]
+        self.x0 = x0
 
     def run_algorithm(self):
         """
@@ -92,8 +102,9 @@ class GA:
         :return: None
         """
         for alg_it in range(self.max_iterations):
-            self.mutate_all(alg_it)
+
             self.crossover()
+            self.mutate_all(alg_it)
             self.find_best_individuals()
 
     def mutate_all(self, alg_it):
@@ -106,7 +117,7 @@ class GA:
         tau = 1/(np.sqrt(2*np.sqrt(alg_it+1)))
         yps = 1/(np.sqrt(2*alg_it+1))
 
-        for ind in self.individuals_list:
+        for i, ind in enumerate(self.children_list):
             ind.mutate(tau=tau, yps=yps)
 
     def crossover(self):
@@ -130,14 +141,22 @@ class GA:
         :param i2: second parent id
         :return: None
         """
+        # Coefficients for crossover
         a_exc = np.random.rand(self.N)
         a_std_dev = np.random.rand(self.N)
 
         # Arithmetic crossover for excitation and standard deviation
+        # First child
         self.children_list[i].excitation = a_exc * self.individuals_list[i1].excitation + \
                                            (1-a_exc) * self.individuals_list[i2].excitation
         self.children_list[i].stand_deviation = a_std_dev * self.individuals_list[i1].stand_deviation + \
                                                 (1 - a_std_dev) * self.individuals_list[i2].stand_deviation
+
+        # Second child
+        self.children_list[i+int(self.lambda_ga/2)].excitation = (1-a_exc) * self.individuals_list[i1].excitation + \
+                                           a_exc * self.individuals_list[i2].excitation
+        self.children_list[i+int(self.lambda_ga/2)].stand_deviation = (1-a_std_dev) * self.individuals_list[i1].stand_deviation + \
+                                                a_std_dev * self.individuals_list[i2].stand_deviation
 
     def find_best_individuals(self):
         """
@@ -145,30 +164,51 @@ class GA:
         Also calculates average performance of individual_list, and best best performance
         :return:
         """
-        individuals_performance = np.asarray([individual.calc_performance_index(x0=1) for individual in self.individuals_list])
-        worst_performance = np.min(individuals_performance)
+        individuals_performance = np.asarray([individual.calc_performance_index(x0=self.x0) for individual in self.individuals_list])
+        worst_performance = np.max(individuals_performance)
 
-        for child in self.children_list:
-            child_performance = child.calc_performance_index(x0=1)
-            if child_performance > worst_performance:
+        for i, child in enumerate(self.children_list):
+            child_performance = child.calc_performance_index(x0=self.x0)
+            if child_performance < worst_performance:
                 individuals_performance = np.append(individuals_performance, child_performance)
-                self.individuals_list = np.append(self.individuals_list, child)
-
+                self.individuals_list.append(copy.deepcopy(child))
 
         indexed_list = zip(individuals_performance, self.individuals_list)
+
         self.individuals_list = [x for _, x in sorted(indexed_list, key=lambda pair: pair[0])]
         self.individuals_list = self.individuals_list[: self.no_individuals]
 
         self.average_performance_list.append(np.average(individuals_performance))
-        self.best_performance_list.append(np.max(individuals_performance))
+        self.best_performance_list.append(np.min(individuals_performance))
+
+        average_standard_deviation = 0.0
+        for i, ind in enumerate(self.individuals_list):
+            average_standard_deviation += np.average(ind.stand_deviation)
+        self.average_standard_dev_list.append(average_standard_deviation/self.no_individuals)
 
 
-
-
-ga = GA(N=100, min_exc_value=-200, max_exc_value=200, max_iterations=100, no_indviduals=100, lambda_ga=20)
-
+ga = GA(N=40, min_exc_value=-200, max_exc_value=200, x0=50, max_iterations=1000, no_indviduals=200, lambda_ga=1400)
 ga.run_algorithm()
 
+
+for j in range(3):
+    print(f"{j}, {ga.individuals_list[j].calc_performance_index(x0=ga.x0)}")
+
+# Performance through time
+plt.plot(range(ga.max_iterations), ga.average_performance_list)
+plt.plot(range(ga.max_iterations), ga.best_performance_list)
+plt.legend(["average", "best"])
+plt.show()
+
+# Average standard deviation through time
+plt.plot(range(ga.max_iterations), ga.average_standard_dev_list)
+plt.show()
+
+# Best excitation and simulation at the end
+plt.plot(range(ga.N), ga.individuals_list[0].excitation)
+plt.plot(range(ga.N+1), ga.individuals_list[0].calc_state(50))
+plt.legend(["excitation", "state"])
+plt.show()
 
 
 
