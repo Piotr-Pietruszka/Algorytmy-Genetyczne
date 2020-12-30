@@ -34,10 +34,14 @@ class Reader:
         plt.plot(range(self.max_iterations), self.average_performance_list)
         plt.plot(range(self.max_iterations), self.best_performance_list)
         plt.legend(["average", "best"])
+        plt.xlabel("algorithm iteration")
+        plt.title(" Performance through time")
         plt.show()
 
         # Average standard deviation through time
         plt.plot(range(self.max_iterations), self.average_standard_dev_list)
+        plt.xlabel("algorithm iteration")
+        plt.title(" Average standard deviation through time")
         plt.show()
 
         for j in range(best_results_no):
@@ -52,13 +56,20 @@ class Reader:
                 axs[row, col].plot(range(self.N+1), self.calc_state[i + j*6])
                 axs[row, col].set_title("{}".format(i + j*6))
 
+            for ax in axs.flat:
+                ax.set(xlabel='n', ylabel='x/u')
+
+            for ax in axs.flat:
+                ax.label_outer()
+
             fig.legend(["excitation", "state"])
+            fig.suptitle("Best algorithm results")
             plt.show()
 
 
 RD = Reader()
 RD.read_files("data")
-RD.draw_results(3) # zestawy
+RD.draw_results(1) # zestawy
 
 
 
