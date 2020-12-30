@@ -2,6 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import math
 
+
 class Reader:
     def __init__(self):
         pass
