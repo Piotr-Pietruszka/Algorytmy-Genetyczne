@@ -202,6 +202,8 @@ class GA:
 
         np.savetxt("{}/Performance.txt".format(dir), [self.best_performance_list, self.average_performance_list])
         np.savetxt("{}/Average_standard_dev.txt".format(dir), np.asarray(self.average_standard_dev_list))
+        np.savetxt("{}/Individuals_performance.txt".format(dir),
+                   np.asarray([individual.calc_performance_index(x0=self.x0) for individual in self.individuals_list]))
 
         excitation = []
         calc_state = []
