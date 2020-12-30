@@ -1,6 +1,6 @@
 import numpy as np
 from matplotlib import pyplot as plt
-
+import math
 
 class Reader:
     def __init__(self):
@@ -40,17 +40,25 @@ class Reader:
         plt.plot(range(self.max_iterations), self.average_standard_dev_list)
         plt.show()
 
-        for i in range(best_results_no):
-            # Best excitation and simulation at the end
-            plt.plot(range(self.N), self.excitation[i])
-            plt.plot(range(self.N+1), self.calc_state[i])
-            plt.legend(["excitation", "state"])
+        for j in range(best_results_no):
+            fig, axs = plt.subplots(2, 3)
+            for i in range(6):
+                row = 0
+                col = i
+                if i > 2:
+                    col = i - 3
+                    row = 1
+                axs[row, col].plot(range(self.N), self.excitation[i + j*6])
+                axs[row, col].plot(range(self.N+1), self.calc_state[i + j*6])
+                axs[row, col].set_title("{}".format(i + j*6))
+
+            fig.legend(["excitation", "state"])
             plt.show()
 
 
 RD = Reader()
 RD.read_files("data")
-RD.draw_results(5)
+RD.draw_results(3) # zestawy
 
 
 
