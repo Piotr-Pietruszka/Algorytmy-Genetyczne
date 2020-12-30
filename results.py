@@ -2,19 +2,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
-def calc_state(self, x0):
-    """
-    Calculates state in time based on initial value and excitation.
-    :param x0: initial state value
-    :return: state in time
-    """
-    x_array = np.zeros(self.N + 1)
-    x_array[0] = x0
-    for k in range(1, self.N + 1):
-        x_array[k] = x_array[k - 1] + self.excitation[k - 1]
-
-    return x_array
-
 class Reader:
     def __init__(self):
         pass
