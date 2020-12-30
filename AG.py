@@ -1,6 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import copy
+import os
 
 
 class Individual:
@@ -72,9 +73,6 @@ class Individual:
         self.excitation = self.excitation + np.random.normal(scale=self.stand_deviation)
         self.excitation[self.excitation > 200] = 200
         self.excitation[self.excitation < -200] = -200
-
-
-
 
 
 class GA:
@@ -186,29 +184,36 @@ class GA:
             average_standard_deviation += np.average(ind.stand_deviation)
         self.average_standard_dev_list.append(average_standard_deviation/self.no_individuals)
 
+    def save_to_files(self, dir):
+        """
+        Save data to files
+        :return:
+        """
+        try:
+            os.mkdir(dir)
+        except OSError:
+            print("Creation of the directory %s failed" % dir)
+
+        file = open("{}/Others.txt".format(dir), "w")
+        file.write("{}".format(self.N))
+        file.write("\n{}".format(self.x0))
+        file.write("\n{}".format(self.max_iterations))
+        file.close()
+
+        np.savetxt("{}/Performance.txt".format(dir), [self.best_performance_list, self.average_performance_list])
+        np.savetxt("{}/Average_standard_dev.txt".format(dir), np.asarray(self.average_standard_dev_list))
+
+        excitation = []
+        calc_state = []
+        for i in range(self.no_individuals):
+            excitation.append(self.individuals_list[i].excitation)
+            calc_state.append(self.individuals_list[i].calc_state(50))
+        np.savetxt("{}/Excitation.txt".format(dir), np.asarray(excitation))
+        np.savetxt("{}/Calc_state.txt".format(dir), np.asarray(calc_state))
+
 
 ga = GA(N=40, min_exc_value=-200, max_exc_value=200, x0=50, max_iterations=1000, no_indviduals=200, lambda_ga=1400)
 ga.run_algorithm()
-
-
-for j in range(3):
-    print(f"{j}, {ga.individuals_list[j].calc_performance_index(x0=ga.x0)}")
-
-# Performance through time
-plt.plot(range(ga.max_iterations), ga.average_performance_list)
-plt.plot(range(ga.max_iterations), ga.best_performance_list)
-plt.legend(["average", "best"])
-plt.show()
-
-# Average standard deviation through time
-plt.plot(range(ga.max_iterations), ga.average_standard_dev_list)
-plt.show()
-
-# Best excitation and simulation at the end
-plt.plot(range(ga.N), ga.individuals_list[0].excitation)
-plt.plot(range(ga.N+1), ga.individuals_list[0].calc_state(50))
-plt.legend(["excitation", "state"])
-plt.show()
-
+ga.save_to_files("data")
 
 
