@@ -214,8 +214,15 @@ class GA:
         np.savetxt("{}/Calc_state.txt".format(dir), np.asarray(calc_state))
 
 
-ga = GA(N=40, min_exc_value=-200, max_exc_value=200, x0=50, max_iterations=1000, no_indviduals=200, lambda_ga=1400)
-ga.run_algorithm()
-ga.save_to_files("data")
+N_list = [5, 10, 15, 20, 25, 30, 35, 40, 45]
+x0 = 50
+max_iterations = 500
+no_indviduals = 200
+lambda_ga = 1400
+
+for N in N_list:
+    ga = GA(N=N, min_exc_value=-200, max_exc_value=200, x0=x0, max_iterations=max_iterations, no_indviduals=no_indviduals, lambda_ga=lambda_ga)
+    ga.run_algorithm()
+    ga.save_to_files(f"data_{N}")
 
 

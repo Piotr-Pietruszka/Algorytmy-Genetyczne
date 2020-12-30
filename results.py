@@ -68,9 +68,16 @@ class Reader:
             plt.show()
 
 
-RD = Reader()
-RD.read_files("data")
-RD.draw_results(1) # zestawy
+N_list = [5, 10, 15, 20, 25, 30, 35, 40, 45]
+
+for N in N_list:
+    RD = Reader()
+    RD.read_files(f"data_{N}")
+    print(np.flip(RD.best_performance_list))
+
+    RD.draw_results(1) # zestawy
+
+
 
 
 
