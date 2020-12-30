@@ -40,6 +40,15 @@ class Reader:
         plt.title("Performance through time x0 = {}, N = {}".format(self.x0, self.N))
         plt.show()
 
+        # Performance through time, starting from starting_iteration
+        starting_iteration = int(self.max_iterations/10)
+        plt.plot(range(starting_iteration, self.max_iterations), self.average_performance_list[starting_iteration:])
+        plt.plot(range(starting_iteration, self.max_iterations), self.best_performance_list[starting_iteration:])
+        plt.legend(["average", "best"])
+        plt.xlabel("algorithm iteration")
+        plt.title("Performance through time x0 = {}, N = {}".format(self.x0, self.N))
+        plt.show()
+
         # Average standard deviation through time
         plt.plot(range(self.max_iterations), self.average_standard_dev_list)
         plt.xlabel("algorithm iteration")
@@ -74,7 +83,6 @@ N_list = [5, 10, 15, 20, 25, 30, 35, 40, 45]
 for N in N_list:
     RD = Reader()
     RD.read_files(f"data_{N}")
-    print(np.flip(RD.best_performance_list))
 
     RD.draw_results(1) # zestawy
 
