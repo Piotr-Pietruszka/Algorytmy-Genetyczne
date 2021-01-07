@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 import math
-
+import os
 
 class Reader:
     def __init__(self):
@@ -32,13 +32,18 @@ class Reader:
 
     def draw_results(self, best_results_no):
 
+        try:
+            os.mkdir("img")
+        except OSError:
+            pass
+
         # Performance through time
         plt.plot(range(self.max_iterations), self.average_performance_list)
         plt.plot(range(self.max_iterations), self.best_performance_list)
         plt.legend(["average", "best"])
         plt.xlabel("algorithm iteration")
         plt.title("Performance through time x0 = {}, N = {}".format(self.x0, self.N))
-        plt.show()
+        plt.savefig("img/performance_x0={},N={}.png".format(self.x0, self.N))
 
         # Performance through time, starting from starting_iteration
         starting_iteration = int(self.max_iterations/10)
@@ -47,15 +52,16 @@ class Reader:
         plt.legend(["average", "best"])
         plt.xlabel("algorithm iteration")
         plt.title("Performance through time x0 = {}, N = {}".format(self.x0, self.N))
-        plt.show()
+        plt.savefig("img/performance_from_time_x0={},N={}.png".format(self.x0, self.N))
 
         # Average standard deviation through time
         plt.plot(range(self.max_iterations), self.average_standard_dev_list)
         plt.xlabel("algorithm iteration")
         plt.title("Average standard deviation through time x0 = {}, N = {}".format(self.x0, self.N))
-        plt.show()
+        plt.savefig("img/std_deviation_x0={},N={}.png".format(self.x0, self.N))
 
         for j in range(best_results_no):
+
             fig, axs = plt.subplots(2, 3)
             for i in range(6):
                 row = 0
@@ -65,7 +71,7 @@ class Reader:
                     row = 1
                 axs[row, col].plot(range(self.N), self.excitation[i + j*6])
                 axs[row, col].plot(range(self.N+1), self.calc_state[i + j*6])
-                axs[row, col].set_title("{}. result = {}".format(i + j*6, self.individuals_preformance[i + j*6]))
+                axs[row, col].set_title("{}) {}".format(i + j*6, round(self.individuals_preformance[i + j*6], 5)))
 
             for ax in axs.flat:
                 ax.set(xlabel='n', ylabel='x/u')
@@ -75,7 +81,8 @@ class Reader:
 
             fig.legend(["excitation", "state"])
             fig.suptitle("Best algorithm results x0 = {}, N = {}".format(self.x0, self.N))
-            plt.show()
+            plt.savefig("img/best_results_x0={},N={}.png".format(self.x0, self.N))
+            plt.clf()
 
 
 N_list = [5, 10, 15, 20, 25, 30, 35, 40, 45]
