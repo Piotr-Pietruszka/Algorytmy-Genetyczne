@@ -191,8 +191,9 @@ class GA:
         """
         try:
             os.mkdir(dir)
-        except OSError:
+        except OSError as error:
             print("Creation of the directory %s failed" % dir)
+            print(error)
 
         file = open("{}/Others.txt".format(dir), "w")
         file.write("{}".format(self.N))
@@ -209,7 +210,7 @@ class GA:
         calc_state = []
         for i in range(self.no_individuals):
             excitation.append(self.individuals_list[i].excitation)
-            calc_state.append(self.individuals_list[i].calc_state(50))
+            calc_state.append(self.individuals_list[i].calc_state(self.x0))
         np.savetxt("{}/Excitation.txt".format(dir), np.asarray(excitation))
         np.savetxt("{}/Calc_state.txt".format(dir), np.asarray(calc_state))
 

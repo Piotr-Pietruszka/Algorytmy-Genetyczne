@@ -44,7 +44,7 @@ class Reader:
         plt.xlabel("algorithm iteration")
         plt.title("Performance through time x0 = {}, N = {}".format(self.x0, self.N))
         plt.savefig("img/performance_x0={},N={}.png".format(self.x0, self.N))
-
+        plt.clf()
         # Performance through time, starting from starting_iteration
         starting_iteration = int(self.max_iterations/10)
         plt.plot(range(starting_iteration, self.max_iterations), self.average_performance_list[starting_iteration:])
@@ -53,12 +53,13 @@ class Reader:
         plt.xlabel("algorithm iteration")
         plt.title("Performance through time x0 = {}, N = {}".format(self.x0, self.N))
         plt.savefig("img/performance_from_time_x0={},N={}.png".format(self.x0, self.N))
-
+        plt.clf()
         # Average standard deviation through time
         plt.plot(range(self.max_iterations), self.average_standard_dev_list)
         plt.xlabel("algorithm iteration")
         plt.title("Average standard deviation through time x0 = {}, N = {}".format(self.x0, self.N))
         plt.savefig("img/std_deviation_x0={},N={}.png".format(self.x0, self.N))
+        plt.clf()
 
         for j in range(best_results_no):
 
